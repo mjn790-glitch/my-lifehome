@@ -879,8 +879,49 @@
 </div>
 
 <div class="footer-note">입력한 데이터는 브라우저를 닫으면 초기화됩니다 · 정기적으로 메모장에 백업 권장</div>
-
 <script>
+const fieldMap = {
+  'a26-1': 4069, 'a26-2': 4142, 'a26-3': 5695, 'a26-4': 5859,
+  'a26-5': 6032, 'a26-6': 8965, 'a26-7': 9312,
+  'a27-1': 9633, 'a27-2': 14964, 'a27-3': 17846, 'a27-4': 18644,
+  'a27-5': 18675, 'a27-6': 22322, 'a27-7': 23372, 'a27-8': 24481,
+  'a27-9': 29324, 'a27-10': 30766, 'a27-11': 32289, 'a27-12': 38740,
+  'a28-1': 40709, 'a28-2': 49789, 'a28-3': 56858, 'a28-4': 59842,
+  'a28-5': 56912, 'a28-6': 65021, 'a28-7': 68462, 'a28-8': 72096,
+  'a28-9': 82422, 'a28-10': 86838, 'a28-11': 91501, 'a28-12': 104660
+};
+
+function saveAll() {
+  const data = {};
+  Object.keys(fieldMap).forEach(id => {
+    const asset = document.getElementById(id + '-asset');
+    const profit = document.getElementById(id + '-profit');
+    const memo = document.getElementById(id + '-memo');
+    if (asset) data[id + '-asset'] = asset.value;
+    if (profit) data[id + '-profit'] = profit.value;
+    if (memo) data[id + '-memo'] = memo.value;
+  });
+  localStorage.setItem('investment_data', JSON.stringify(data));
+  const status = document.getElementById('save-status');
+  status.textContent = '✅ 저장됨 · ' + new Date().toLocaleTimeString('ko-KR');
+  setTimeout(() => {
+    status.textContent = '💾 자동저장 활성화 · 브라우저를 닫아도 데이터가 유지됩니다';
+  }, 2000);
+}
+
+function loadAll() {
+  const raw = localStorage.getItem('investment_data');
+  if (!raw) return;
+  const data = JSON.parse(raw);
+  Object.keys(data).forEach(key => {
+    const el = document.getElementById(key);
+    if (el) el.value = data[key];
+  });
+  Object.keys(fieldMap).forEach(id => {
+    calcDiff(id, fieldMap[id]);
+  });
+}
+
 function showYear(year) {
   document.querySelectorAll('.year-content').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.year-tab').forEach(el => el.classList.remove('active'));
@@ -889,8 +930,10 @@ function showYear(year) {
 }
 
 function calcDiff(id, expected) {
-  const actual = parseFloat(document.getElementById(id + '-asset').value);
+  const assetEl = document.getElementById(id + '-asset');
   const diffEl = document.getElementById(id + '-diff');
+  if (!assetEl || !diffEl) return;
+  const actual = parseFloat(assetEl.value);
   if (isNaN(actual)) { diffEl.textContent = '-'; diffEl.className = 'diff-zero'; return; }
   const diff = actual - expected;
   if (diff > 0) {
@@ -905,9 +948,16 @@ function calcDiff(id, expected) {
   }
 }
 
-function saveActual(year) {
-  alert('✅ 저장되었습니다!\n\n브라우저 새로고침 시 초기화되니\n중요한 수치는 메모장에도 기록해두세요.');
-}
+function saveActual(year) { saveAll(); }
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadAll();
+  document.querySelectorAll('input').forEach(input => {
+    input.addEventListener('input', () => {
+      const id = input.id.replace('-asset','').replace('-profit','').replace('-memo','');
+      if (fieldMap[id]) calcDiff(id, fieldMap[id]);
+      saveAll();
+    });
+  });
+});
 </script>
-</body>
-</html>
