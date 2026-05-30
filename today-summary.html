@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>오늘의 작업 기록</title>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1e2d45;
+    --accent: #00c2a8;
+    --accent2: #f59e0b;
+    --accent3: #6366f1;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #475569;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Nanum Gothic', sans-serif;
+    min-height: 100vh;
+    padding: 24px 16px;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .header h1 {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    background: linear-gradient(135deg, var(--accent), var(--accent3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .header p {
+    color: var(--text3);
+    font-size: 11px;
+    margin-top: 6px;
+    letter-spacing: 2px;
+  }
+
+  /* 타임라인 */
+  .timeline { position: relative; padding-left: 32px; margin-bottom: 32px; }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 10px; top: 0; bottom: 0;
+    width: 1px;
+    background: linear-gradient(180deg, var(--accent), var(--accent3), transparent);
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 24px;
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -26px;
+    top: 6px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg);
+  }
+
+  .timeline-item.purple::before { background: var(--accent3); }
+  .timeline-item.yellow::before { background: var(--accent2); }
+
+  .timeline-item .step-tag {
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--text3);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+
+  .timeline-item h3 {
+    font-size: 14px;
+    font-weight: 800;
+    margin-bottom: 6px;
+    color: var(--text);
+  }
+
+  .timeline-item p {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+
+  .timeline-item .result {
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .timeline-item.purple .result { color: var(--accent3); }
+  .timeline-item.yellow .result { color: var(--accent2); }
+
+  /* 링크 섹션 */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .section-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: var(--text2);
+  }
+
+  .section-body { padding: 12px 16px; }
+
+  .link-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(30,45,69,0.4);
+  }
+
+  .link-row:last-child { border-bottom: none; }
+
+  .link-row .link-info .link-name {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+
+  .link-row .link-info .link-desc {
+    font-size: 10px;
+    color: var(--text3);
+  }
+
+  .link-row a {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    text-decoration: none;
+    background: var(--surface2);
+    padding: 5px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .link-row a:hover {
+    border-color: var(--accent);
+    background: rgba(0,194,168,0.05);
+  }
+
+  .link-row a.purple {
+    color: var(--accent3);
+  }
+
+  .link-row a.yellow {
+    color: var(--accent2);
+  }
+
+  /* 성과 카드 */
+  .achievement {
+    background: linear-gradient(135deg, rgba(0,194,168,0.1), rgba(99,102,241,0.1));
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+
+  .achievement h2 {
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, var(--accent), var(--accent3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .achievement-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .ach-item {
+    background: var(--surface);
+    border-radius: 10px;
+    padding: 10px 6px;
+    font-size: 11px;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+
+  .ach-item .ach-icon { font-size: 18px; display: block; margin-bottom: 4px; }
+
+  .date-tag {
+    text-align: center;
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 1px;
+    padding: 12px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>오늘의 작업 기록</h1>
+  <p>2026.05.30 · CLAUDE와 함께한 하루</p>
+</div>
+
+<!-- 성과 요약 -->
+<div class="achievement">
+  <h2>오늘 완성한 것들</h2>
+  <div class="achievement-grid">
+    <div class="ach-item"><span class="ach-icon">🖥️</span>PC 속도 문제 해결</div>
+    <div class="ach-item"><span class="ach-icon">⚡</span>Claude Code 설치</div>
+    <div class="ach-item"><span class="ach-icon">📊</span>투자 시뮬레이션</div>
+    <div class="ach-item"><span class="ach-icon">💰</span>투자 가계부 앱</div>
+    <div class="ach-item"><span class="ach-icon">🐙</span>GitHub 계정 생성</div>
+    <div class="ach-item"><span class="ach-icon">🌐</span>Vercel 배포 완료</div>
+  </div>
+</div>
+
+<!-- 타임라인 -->
+<div class="section">
+  <div class="section-header">⏱ 시간순 작업 기록</div>
+  <div class="section-body">
+    <div class="timeline">
+
+      <div class="timeline-item">
+        <div class="step-tag">STEP 01</div>
+        <h3>🖥️ PC 속도 문제 해결</h3>
+        <p>작업관리자 확인 → 메모리 63% 사용 / 380시간 연속 가동 확인 → PC 재시작으로 해결</p>
+        <div class="result">✅ 속도 정상화</div>
+      </div>
+
+      <div class="timeline-item purple">
+        <div class="step-tag">STEP 02</div>
+        <h3>⚡ Claude Code 설치</h3>
+        <p>Node.js 설치 → PowerShell 보안 정책 해제 → npm으로 Claude Code 설치 → Git 설치 및 환경변수 설정 → 로그인 완료</p>
+        <div class="result">✅ 파워셸에서 claude 명령어로 접속 가능</div>
+      </div>
+
+      <div class="timeline-item yellow">
+        <div class="step-tag">STEP 03</div>
+        <h3>📊 투자 시뮬레이션 설계</h3>
+        <p>시작 자산 4,000만원 · 4주마다 40% 투자 · 14% 수익 · 3/6/9회차 특별매매 · 생활비 · 세금 22% 계산 · 2026~2028년 전체 시뮬레이션</p>
+        <div class="result">✅ 2028년 9월 5억 달성 · 연말 10억 예상</div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="step-tag">STEP 04</div>
+        <h3>💰 투자 가계부 앱 제작</h3>
+        <p>2026/2027/2028년 탭 구성 · 회차별 시뮬레이션 표 · 실제 투자 기록 입력칸 · 예상 대비 차이 자동 계산</p>
+        <div class="result">✅ investment-tracker.html 완성</div>
+      </div>
+
+      <div class="timeline-item purple">
+        <div class="step-tag">STEP 05</div>
+        <h3>🐙 GitHub 계정 생성 및 Repository 만들기</h3>
+        <p>github.com 가입 · 아이디: mjn790-glitch · my-lifehome Repository 생성 · 파일 2개 업로드</p>
+        <div class="result">✅ 코드 저장소 완성</div>
+      </div>
+
+      <div class="timeline-item yellow">
+        <div class="step-tag">STEP 06</div>
+        <h3>▲ Vercel 배포 완료</h3>
+        <p>vercel.com 가입 · GitHub 연동 · my-lifehome 프로젝트 배포 · index.html 설정</p>
+        <div class="result">✅ my-lifehome.vercel.app 접속 가능</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- 주요 접속 주소 -->
+<div class="section">
+  <div class="section-header">🔗 주요 접속 주소</div>
+  <div class="section-body">
+
+    <div class="link-row">
+      <div class="link-info">
+        <div class="link-name">🌐 내 투자 가계부</div>
+        <div class="link-desc">폰/PC 어디서든 접속 · 메인 앱</div>
+      </div>
+      <a href="https://my-lifehome.vercel.app" target="_blank">바로가기 →</a>
+    </div>
+
+    <div class="link-row">
+      <div class="link-info">
+        <div class="link-name">🐙 GitHub 내 저장소</div>
+        <div class="link-desc">파일 업로드 · 수정할 때 여기에</div>
+      </div>
+      <a href="https://github.com/mjn790-glitch/my-lifehome" target="_blank" class="purple">바로가기 →</a>
+    </div>
+
+    <div class="link-row">
+      <div class="link-info">
+        <div class="link-name">▲ Vercel 대시보드</div>
+        <div class="link-desc">배포 상태 확인 · 링크 관리</div>
+      </div>
+      <a href="https://vercel.com/may-lifehome-project" target="_blank" class="yellow">바로가기 →</a>
+    </div>
+
+    <div class="link-row">
+      <div class="link-info">
+        <div class="link-name">✳️ Claude AI</div>
+        <div class="link-desc">작업 요청 · 파일 수정</div>
+      </div>
+      <a href="https://claude.ai" target="_blank">바로가기 →</a>
+    </div>
+
+    <div class="link-row">
+      <div class="link-info">
+        <div class="link-name">💻 Claude Code</div>
+        <div class="link-desc">파워셸에서 claude 입력</div>
+      </div>
+      <a href="#" style="color:var(--text3);cursor:default">PowerShell</a>
+    </div>
+
+  </div>
+</div>
+
+<!-- 앞으로 수정할 때 -->
+<div class="section">
+  <div class="section-header">🔄 앞으로 수정할 때</div>
+  <div class="section-body" style="padding:16px 18px">
+    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:14px">
+      <span style="font-size:20px">1️⃣</span>
+      <div>
+        <div style="font-size:13px;font-weight:700;margin-bottom:2px">Claude에게 수정 요청</div>
+        <div style="font-size:11px;color:var(--text3)">claude.ai 또는 파워셸에서 claude 실행</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:14px">
+      <span style="font-size:20px">2️⃣</span>
+      <div>
+        <div style="font-size:13px;font-weight:700;margin-bottom:2px">새 파일 다운로드</div>
+        <div style="font-size:11px;color:var(--text3)">수정된 HTML 파일 저장</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:14px">
+      <span style="font-size:20px">3️⃣</span>
+      <div>
+        <div style="font-size:13px;font-weight:700;margin-bottom:2px">GitHub에 올리기</div>
+        <div style="font-size:11px;color:var(--text3)">github.com/mjn790-glitch/my-lifehome → 파일 업로드</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;align-items:flex-start">
+      <span style="font-size:20px">4️⃣</span>
+      <div>
+        <div style="font-size:13px;font-weight:700;margin-bottom:2px">자동 반영</div>
+        <div style="font-size:11px;color:var(--text3)">my-lifehome.vercel.app 에 바로 반영됨</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="date-tag">2026.05.30 · Claude와 함께한 하루 · 수고하셨어요 🙂</div>
+
+</body>
+</html>
