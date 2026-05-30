@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>투자 현금흐름</title>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1e2d45;
+    --accent: #00c2a8;
+    --accent2: #f59e0b;
+    --accent3: #6366f1;
+    --red: #ef4444;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #475569;
+    --special: #a78bfa;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Nanum Gothic', sans-serif;
+    min-height: 100vh;
+    padding: 24px 16px;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+    position: relative;
+  }
+
+  .header::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+
+  .header h1 {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 4px;
+    background: linear-gradient(135deg, var(--accent), var(--accent3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: inline-block;
+    background-color: var(--bg);
+    padding: 0 20px;
+    position: relative;
+  }
+
+  .header p {
+    color: var(--text2);
+    font-size: 12px;
+    margin-top: 8px;
+    letter-spacing: 2px;
+  }
+
+  /* 요약 카드 */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .summary-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .summary-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .summary-card.green::before { background: var(--accent); }
+  .summary-card.yellow::before { background: var(--accent2); }
+  .summary-card.purple::before { background: var(--special); }
+  .summary-card.red::before { background: var(--red); }
+
+  .summary-card .label {
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .summary-card .value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .summary-card.green .value { color: var(--accent); }
+  .summary-card.yellow .value { color: var(--accent2); }
+  .summary-card.purple .value { color: var(--special); }
+  .summary-card.red .value { color: var(--red); }
+
+  .summary-card .sub {
+    font-size: 10px;
+    color: var(--text3);
+    margin-top: 4px;
+  }
+
+  /* 연도 탭 */
+  .year-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .year-tab {
+    padding: 8px 20px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text2);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+    font-family: 'Nanum Gothic', sans-serif;
+  }
+
+  .year-tab.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0a0e1a;
+  }
+
+  /* 테이블 */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .table-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .table-header h2 {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: var(--text2);
+  }
+
+  .table-header .badge {
+    font-size: 10px;
+    padding: 3px 10px;
+    border-radius: 10px;
+    background: var(--surface2);
+    color: var(--text3);
+    letter-spacing: 1px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  thead th {
+    padding: 10px 12px;
+    text-align: right;
+    color: var(--text3);
+    font-size: 10px;
+    letter-spacing: 1px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  thead th:first-child { text-align: left; }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(30,45,69,0.5);
+    transition: background 0.15s;
+  }
+
+  tbody tr:hover { background: var(--surface2); }
+  tbody tr:last-child { border-bottom: none; }
+
+  tbody tr.special {
+    background: rgba(167,139,250,0.05);
+  }
+
+  tbody tr.special:hover {
+    background: rgba(167,139,250,0.1);
+  }
+
+  tbody tr.tax-row {
+    background: rgba(239,68,68,0.05);
+  }
+
+  td {
+    padding: 10px 12px;
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text2);
+    white-space: nowrap;
+  }
+
+  td:first-child {
+    text-align: left;
+    font-family: 'Nanum Gothic', sans-serif;
+    font-weight: 700;
+  }
+
+  .round-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+  }
+
+  .round-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: var(--surface2);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text3);
+  }
+
+  .special .round-num {
+    background: rgba(167,139,250,0.2);
+    color: var(--special);
+  }
+
+  .month-tag {
+    font-size: 10px;
+    color: var(--text3);
+    display: block;
+    margin-top: 2px;
+  }
+
+  .profit { color: var(--accent); }
+  .special-profit { color: var(--special); }
+  .tax-val { color: var(--red); }
+  .total { color: var(--text); font-weight: 700; }
+  .asset-val { color: var(--accent2); font-weight: 700; }
+  .living { color: var(--red); }
+  .add-fund { color: #60a5fa; }
+
+  .note-tag {
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Nanum Gothic', sans-serif;
+    font-weight: 700;
+    display: inline-block;
+    margin-left: 4px;
+  }
+
+  .note-special { background: rgba(167,139,250,0.15); color: var(--special); }
+  .note-add { background: rgba(96,165,250,0.15); color: #60a5fa; }
+  .note-tax { background: rgba(239,68,68,0.15); color: var(--red); }
+
+  /* 실제 투자 입력 영역 */
+  .actual-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .actual-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .actual-header h2 {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: var(--text2);
+  }
+
+  .actual-header .edit-btn {
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--accent);
+    background: transparent;
+    color: var(--accent);
+    cursor: pointer;
+    font-family: 'Nanum Gothic', sans-serif;
+    font-weight: 700;
+    transition: all 0.2s;
+  }
+
+  .actual-header .edit-btn:hover {
+    background: var(--accent);
+    color: #0a0e1a;
+  }
+
+  .actual-table td input {
+    background: transparent;
+    border: none;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    text-align: right;
+    width: 100%;
+    outline: none;
+    padding: 0;
+  }
+
+  .actual-table td input:focus {
+    border-bottom: 1px solid var(--accent);
+  }
+
+  .actual-table td input::placeholder {
+    color: var(--text3);
+  }
+
+  .diff-plus { color: var(--accent); }
+  .diff-minus { color: var(--red); }
+  .diff-zero { color: var(--text3); }
+
+  /* 연간 요약 바 */
+  .year-summary {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    text-align: center;
+  }
+
+  .year-summary .ys-item .ys-label {
+    font-size: 9px;
+    color: var(--text3);
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+
+  .year-summary .ys-item .ys-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  /* 숨김 */
+  .year-content { display: none; }
+  .year-content.active { display: block; }
+
+  /* 반응형 스크롤 */
+  .table-scroll { overflow-x: auto; }
+
+  .footer-note {
+    text-align: center;
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 1px;
+    padding: 12px;
+  }
+
+  @media (min-width: 768px) {
+    body { padding: 32px; max-width: 1000px; margin: 0 auto; }
+    .summary-grid { grid-template-columns: repeat(4, 1fr); }
+    table { font-size: 13px; }
+    thead th { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>투자 현금흐름</h1>
+  <p>INVESTMENT CASH FLOW TRACKER</p>
+</div>
+
+<!-- 요약 카드 -->
+<div class="summary-grid">
+  <div class="summary-card green">
+    <div class="label">현재 목표 자산</div>
+    <div class="value" id="cur-asset">9,312만</div>
+    <div class="sub">2026년 말 예상</div>
+  </div>
+  <div class="summary-card yellow">
+    <div class="label">최종 목표</div>
+    <div class="value">5억</div>
+    <div class="sub">2028년 중반 달성</div>
+  </div>
+  <div class="summary-card purple">
+    <div class="label">시작 자산</div>
+    <div class="value">4,000만</div>
+    <div class="sub">2026년 6월</div>
+  </div>
+  <div class="summary-card red">
+    <div class="label">납부 예정 세금</div>
+    <div class="value" id="next-tax">813만</div>
+    <div class="sub">다음 5월 납부</div>
+  </div>
+</div>
+
+<!-- 연도 탭 -->
+<div class="year-tabs">
+  <button class="year-tab active" onclick="showYear('2026')">2026년</button>
+  <button class="year-tab" onclick="showYear('2027')">2027년</button>
+  <button class="year-tab" onclick="showYear('2028')">2028년</button>
+</div>
+
+<!-- 2026년 -->
+<div id="year-2026" class="year-content active">
+  <div class="year-summary">
+    <div class="ys-item">
+      <div class="ys-label">연말 예상 자산</div>
+      <div class="ys-val" style="color:var(--accent2)">9,312만</div>
+    </div>
+    <div class="ys-item">
+      <div class="ys-label">연간 총 수익</div>
+      <div class="ys-val" style="color:var(--accent)">3,697만</div>
+    </div>
+    <div class="ys-item">
+      <div class="ys-label">내년 5월 세금</div>
+      <div class="ys-val" style="color:var(--red)">813만</div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">
+      <h2>시뮬레이션</h2>
+      <span class="badge">7회차 · 6월~12월</span>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>회차</th>
+            <th>투자 전 자산</th>
+            <th>일반수익<br><span style="font-size:9px">40%·14%</span></th>
+            <th>특별수익<br><span style="font-size:9px">50%·30%</span></th>
+            <th>생활비</th>
+            <th>회차 말 자산</th>
+            <th>누적수익</th>
+            <th>누적세금</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><div class="round-badge"><span class="round-num">1</span><div><span>6월</span><span class="month-tag">일반</span></div></div></td>
+            <td>4,000만</td>
+            <td class="profit">+224만</td>
+            <td class="diff-zero">-</td>
+            <td class="living">-155만</td>
+            <td class="asset-val">4,069만</td>
+            <td class="total">224만</td>
+            <td class="tax-val">49만</td>
+          </tr>
+          <tr>
+            <td><div class="round-badge"><span class="round-num">2</span><div><span>7월</span><span class="month-tag">일반</span></div></div></td>
+            <td>4,069만</td>
+            <td class="profit">+228만</td>
+            <td class="diff-zero">-</td>
+            <td class="living">-155만</td>
+            <td class="asset-val">4,142만</td>
+            <td class="total">452만</td>
+            <td class="tax-val">99만</td>
+          </tr>
+          <tr class="special">
+            <td><div class="round-badge"><span class="round-num">3</span><div><span>8월<span class="note-tag note-special">특별</span></span><span class="month-tag">40%+50%</span></div></div></td>
+            <td>4,142만</td>
+            <td class="profit">+232만</td>
+            <td class="special-profit">+621만</td>
+            <td class="living">-155만</td>
+            <td class="asset-val">5,695만</td>
+            <td class="total">1,305만</td>
+            <td class="tax-val">287만</td>
+          </tr>
+          <tr>
+            <td><div class="round-badge"><span class="round-num">4</span><div><span>9월</span><span class="month-tag">일반</span></div></div></td>
+            <td>5,695만</td>
+            <td class="profit">+319만</td>
+            <td class="diff-zero">-</td>
+            <td class="living">-155만</td>
+            <td class="asset-val">5,859만</td>
+            <td class="total">1,624만</td>
+            <td class="tax-val">357만</td>
+          </tr>
+          <tr>
+            <td><div class="round-badge"><span class="round-num">5</span><div><span>10월</span><span class="month-tag">일반</span></div></div></td>
+            <td>5,859만</td>
+            <td class="profit">+328만</td>
+            <td class="diff-zero">-</td>
+            <td class="living">-155만</td>
+            <td class="asset-val">6,032만</td>
+            <td class="total">1,952만</td>
+            <td class="tax-val">429만</td>
+          </tr>
+          <tr class="special">
+            <td><div class="round-badge"><span class="round-num">6</span><div><span>11월<span class="note-tag note-special">특별</span></span><span class="month-tag">40%+50%</span></div></div></td>
+            <td>6,032만</td>
+            <td class="profit">+338만</td>
+            <td class="special-profit">+905만</td>
+            <td class="living">-155만</td>
+            <td class="asset-val">8,965만</td>
+            <td class="total">3,195만</td>
+            <td class="tax-val">703만</td>
+          </tr>
+          <tr>
+            <td><div class="round-badge"><span class="round-num">7</span><div><span>12월</span><span class="month-tag">일반</span></div></div></td>
+            <td>8,965만</td>
+            <td class="profit">+502만</td>
+            <td class="diff-zero">-</td>
+            <td class="living">-155만</td>
+            <td class="asset-val">9,312만</td>
+            <td class="total">3,697만</td>
+            <td class="tax-val">813만</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 실제 기록 -->
+  <div class="actual-section">
+    <div class="actual-header">
+      <h2>실제 투자 기록</h2>
+      <button class="edit-btn" onclick="saveActual('2026')">저장</button>
+    </div>
+    <div class="table-scroll">
+      <table class="actual-table">
+        <thead>
+          <tr>
+            <th>회차</th>
+            <th>실제 자산 (만원)</th>
+            <th>실제 수익 (만원)</th>
+            <th>메모</th>
+            <th>예상 대비</th>
+          </tr>
+        </thead>
+        <tbody id="actual-2026">
+          <tr><td>1회 · 6월</td><td><input type="number" placeholder="입력" id="a26-1-asset" onchange="calcDiff('a26-1',4069)"></td><td><input type="number" placeholder="입력" id="a26-1-profit"></td><td><input type="text" placeholder="메모" id="a26-1-memo" style="text-align:left;color:var(--text2)"></td><td id="a26-1-diff" class="diff-zero">-</td></tr>
+          <tr><td>2회 · 7월</td><td><input type="number" placeholder="입력" id="a26-2-asset" onchange="calcDiff('a26-2',4142)"></td><td><input type="number" placeholder="입력" id="a26-2-profit"></td><td><input type="text" placeholder="메모" id="a26-2-memo" style="text-align:left;color:var(--text2)"></td><td id="a26-2-diff" class="diff-zero">-</td></tr>
+          <tr><td>3회 · 8월</td><td><input type="number" placeholder="입력" id="a26-3-asset" onchange="calcDiff('a26-3',5695)"></td><td><input type="number" placeholder="입력" id="a26-3-profit"></td><td><input type="text" placeholder="메모" id="a26-3-memo" style="text-align:left;color:var(--text2)"></td><td id="a26-3-diff" class="diff-zero">-</td></tr>
+          <tr><td>4회 · 9월</td><td><input type="number" placeholder="입력" id="a26-4-asset" onchange="calcDiff('a26-4',5859)"></td><td><input type="number" placeholder="입력" id="a26-4-profit"></td><td><input type="text" placeholder="메모" id="a26-4-memo" style="text-align:left;color:var(--text2)"></td><td id="a26-4-diff" class="diff-zero">-</td></tr>
+          <tr><td>5회 · 10월</td><td><input type="number" placeholder="입력" id="a26-5-asset" onchange="calcDiff('a26-5',6032)"></td><td><input type="number" placeholder="입력" id="a26-5-profit"></td><td><input type="text" placeholder="메모" id="a26-5-memo" style="text-align:left;color:var(--text2)"></td><td id="a26-5-diff" class="diff-zero">-</td></tr>
+          <tr><td>6회 · 11월</td><td><input type="number" placeholder="입력" id="a26-6-asset" onchange="calcDiff('a26-6',8965)"></td><td><input type="number" placeholder="입력" id="a26-6-profit"></td><td><input type="text" placeholder="메모" id="a26-6-memo" style="text-align:left;color:var(--text2)"></td><td id="a26-6-diff" class="diff-zero">-</td></tr>
+          <tr><td>7회 · 12월</td><td><input type="number" placeholder="입력" id="a26-7-asset" onchange="calcDiff('a26-7',9312)"></td><td><input type="number" placeholder="입력" id="a26-7-profit"></td><td><input type="text" placeholder="메모" id="a26-7-memo" style="text-align:left;color:var(--text2)"></td><td id="a26-7-diff" class="diff-zero">-</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 2027년 -->
+<div id="year-2027" class="year-content">
+  <div class="year-summary">
+    <div class="ys-item">
+      <div class="ys-label">연말 예상 자산</div>
+      <div class="ys-val" style="color:var(--accent2)">3억 8,740만</div>
+    </div>
+    <div class="ys-item">
+      <div class="ys-label">연간 총 수익</div>
+      <div class="ys-val" style="color:var(--accent)">2억 7,641만</div>
+    </div>
+    <div class="ys-item">
+      <div class="ys-label">내년 5월 세금</div>
+      <div class="ys-val" style="color:var(--red)">6,081만</div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">
+      <h2>시뮬레이션</h2>
+      <span class="badge">12회차 · 1월~12월</span>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>회차</th>
+            <th>투자 전 자산</th>
+            <th>일반수익<br><span style="font-size:9px">40%·14%</span></th>
+            <th>특별수익<br><span style="font-size:9px">50%·30%</span></th>
+            <th>생활비</th>
+            <th>비고</th>
+            <th>회차 말 자산</th>
+            <th>누적수익</th>
+            <th>누적세금</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><div class="round-badge"><span class="round-num">1</span><div><span>1월</span><span class="month-tag">일반</span></div></div></td>
+            <td>9,312만</td><td class="profit">+521만</td><td class="diff-zero">-</td>
+            <td class="living">-200만</td><td>-</td>
+            <td class="asset-val">9,633만</td><td class="total">521만</td><td class="tax-val">115만</td>
+          </tr>
+          <tr>
+            <td><div class="round-badge"><span class="round-num">2</span><div><span>2월<span class="note-tag note-add">+5천</span></span><span class="month-tag">일반</span></div></div></td>
+            <td>9,633만</td><td class="profit">+531만</td><td class="diff-zero">-</td>
+            <td class="living">-200만</td><td class="add-fund">+5,000만 투입</td>
+            <td class="asset-val">14,964만</td><td class="total">1,052만</td><td class="tax-val">231만</td>
+          </tr>
+          <tr class="special">
+            <td><div class="round-badge"><span class="round-num">3</span><div><span>3월<span class="note-tag note-special">특별</span></span><span class="month-tag">40%+50%</span></div></div></td>
+            <td>14,964만</td><td class="profit">+837만</td><td class="special-profit">+2,245만</td>
+            <td class="living">-200만</td><td>-</td>
+            <td class="asset-val">17,846만</td><td class="total">4,134만</td><td class="tax-val">909만</td>
+          </tr>
+          <tr>
+            <td><div class="round-badge"><span class="round-num">4</span><div><span>4월</span><span class="month-tag">일반</span></div></div></td>
+            <td>17,846만</td><td class="profit">+998만</td><td class="diff-zero">-</td>
+            <td class="living">-200만</td><td>-</td>
+            <td class="asset-val">18,644만</td><td class="total">5,132만</td><td class="tax-val">1,129만</td>
+          </tr>
+          <tr class="tax-row">
+            <td><div class="round-badge"><span class="round-num">5</span><div><span>5월<span class="note-tag note-tax">세금납부</span></span><span class="month-tag">일반</span></div></div></td>
+            <td>18,644만</td><td class="profit">+1,044만</td><td class="diff-zero">-</td>
+            <td class="living">-200만</td><td class="tax-val">-813만 (2026세금)</td>
+            <td class="asset-val">18,675만</td><td class="total">6,176만</td><td class="tax-val">1,359만</td>
+          </tr>
+          <tr class="special">
+            <td><div class="round-badge"><span class="round-num">6</span><div><span>6월<span class="note-tag note-special">특별</span></span><span class="month-tag">40%+50%</span></div></div></td>
+            <td>18,675만</td><td class="profit">+1,046만</td><td class="special-profit">+2,801만</td>
+            <td class="living">-200만</td><td>-</td>
+            <td class="asset-val">22,322만</td><td class="total">10,023만</td><td class="tax-val">2,205만</td>
+          </tr>
+          <tr>
+            <td><div class="round-badge"><span class="round-num">7</span><div><span>7월</span><span class="month-tag">일반</span></div></div></td>
+            <td>22,322만</td><td class="profit">+1,250만</td><td class="diff-zero">-</td>
+            <td class="living">-200만</td><td>-</td>
+            <td class="asset-val">23,372만</td><td class="total">11,273만</td><td class="tax-val">2,480만</td>
+          </tr>
+          <tr>
+            <td><div class="round-badge"><span class="round-num">8</span><div><span>8월</span><span class="month-tag">일반</span></div></div></td>
+            <td>23,372만</td><td class="profit">+1,309만</td><td class="diff-zero">-</td>
+            <td class="living">-200만</td><td>-</td>
+            <td class="asset-val">24,481만</td><td class="total">12,582만</td><td class="tax-val">2,768만</td>
+          </tr>
+          <tr class="special">
+            <td><div class="round-badge"><span class="round-num">9</span><div><span>9월<span class="note-tag note-special">특별</span></span><span class="month-tag">40%+50%</span></div></div></td>
+            <td>24,481만</td><td class="profit">+1,371만</td><td class="special-profit">+3,672만</td>
+            <td class="living">-200만</td><td>-</td>
+            <td class="asset-val">29,324만</td><td class="total">17,625만</td><td class="tax-val">3,878만</td>
+          </tr>
+          <tr>
+            <td><div class="round-badge"><span class="round-num">10</span><div><span>10월</span><span class="month-tag">일반</span></div></div></td>
+            <td>29,324만</td><td class="profit">+1,642만</td><td class="diff-zero">-</td>
+            <td class="living">-200만</td><td>-</td>
+            <td class="asset-val">30,766만</td><td class="total">19,267만</td><td class="tax-val">4,239만</td>
+          </tr>
+          <tr>
+            <td><div class="round-badge"><span class="round-num">11</span><div><span>11월</span><span class="month-tag">일반</span></div></div></td>
+            <td>30,766만</td><td class="profit">+1,723만</td><td class="diff-zero">-</td>
+            <td class="living">-200만</td><td>-</td>
+            <td class="asset-val">32,289만</td><td class="total">20,990만</td><td class="tax-val">4,618만</td>
+          </tr>
+          <tr class="special">
+            <td><div class="round-badge"><span class="round-num">12</span><div><span>12월<span class="note-tag note-special">특별</span></span><span class="month-tag">40%+50%</span></div></div></td>
+            <td>32,289만</td><td class="profit">+1,808만</td><td class="special-profit">+4,843만</td>
+            <td class="living">-200만</td><td>-</td>
+            <td class="asset-val">38,740만</td><td class="total">27,641만</td><td class="tax-val">6,081만</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="actual-section">
+    <div class="actual-header">
+      <h2>실제 투자 기록</h2>
+      <button class="edit-btn" onclick="saveActual('2027')">저장</button>
+    </div>
+    <div class="table-scroll">
+      <table class="actual-table">
+        <thead>
+          <tr>
+            <th>회차</th><th>실제 자산 (만원)</th><th>실제 수익 (만원)</th><th>메모</th><th>예상 대비</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>1회 · 1월</td><td><input type="number" placeholder="입력" id="a27-1-asset" onchange="calcDiff('a27-1',9633)"></td><td><input type="number" placeholder="입력" id="a27-1-profit"></td><td><input type="text" placeholder="메모" id="a27-1-memo" style="text-align:left;color:var(--text2)"></td><td id="a27-1-diff" class="diff-zero">-</td></tr>
+          <tr><td>2회 · 2월</td><td><input type="number" placeholder="입력" id="a27-2-asset" onchange="calcDiff('a27-2',14964)"></td><td><input type="number" placeholder="입력" id="a27-2-profit"></td><td><input type="text" placeholder="메모" id="a27-2-memo" style="text-align:left;color:var(--text2)"></td><td id="a27-2-diff" class="diff-zero">-</td></tr>
+          <tr><td>3회 · 3월</td><td><input type="number" placeholder="입력" id="a27-3-asset" onchange="calcDiff('a27-3',17846)"></td><td><input type="number" placeholder="입력" id="a27-3-profit"></td><td><input type="text" placeholder="메모" id="a27-3-memo" style="text-align:left;color:var(--text2)"></td><td id="a27-3-diff" class="diff-zero">-</td></tr>
+          <tr><td>4회 · 4월</td><td><input type="number" placeholder="입력" id="a27-4-asset" onchange="calcDiff('a27-4',18644)"></td><td><input type="number" placeholder="입력" id="a27-4-profit"></td><td><input type="text" placeholder="메모" id="a27-4-memo" style="text-align:left;color:var(--text2)"></td><td id="a27-4-diff" class="diff-zero">-</td></tr>
+          <tr><td>5회 · 5월</td><td><input type="number" placeholder="입력" id="a27-5-asset" onchange="calcDiff('a27-5',18675)"></td><td><input type="number" placeholder="입력" id="a27-5-profit"></td><td><input type="text" placeholder="메모" id="a27-5-memo" style="text-align:left;color:var(--text2)"></td><td id="a27-5-diff" class="diff-zero">-</td></tr>
+          <tr><td>6회 · 6월</td><td><input type="number" placeholder="입력" id="a27-6-asset" onchange="calcDiff('a27-6',22322)"></td><td><input type="number" placeholder="입력" id="a27-6-profit"></td><td><input type="text" placeholder="메모" id="a27-6-memo" style="text-align:left;color:var(--text2)"></td><td id="a27-6-diff" class="diff-zero">-</td></tr>
+          <tr><td>7회 · 7월</td><td><input type="number" placeholder="입력" id="a27-7-asset" onchange="calcDiff('a27-7',23372)"></td><td><input type="number" placeholder="입력" id="a27-7-profit"></td><td><input type="text" placeholder="메모" id="a27-7-memo" style="text-align:left;color:var(--text2)"></td><td id="a27-7-diff" class="diff-zero">-</td></tr>
+          <tr><td>8회 · 8월</td><td><input type="number" placeholder="입력" id="a27-8-asset" onchange="calcDiff('a27-8',24481)"></td><td><input type="number" placeholder="입력" id="a27-8-profit"></td><td><input type="text" placeholder="메모" id="a27-8-memo" style="text-align:left;color:var(--text2)"></td><td id="a27-8-diff" class="diff-zero">-</td></tr>
+          <tr><td>9회 · 9월</td><td><input type="number" placeholder="입력" id="a27-9-asset" onchange="calcDiff('a27-9',29324)"></td><td><input type="number" placeholder="입력" id="a27-9-profit"></td><td><input type="text" placeholder="메모" id="a27-9-memo" style="text-align:left;color:var(--text2)"></td><td id="a27-9-diff" class="diff-zero">-</td></tr>
+          <tr><td>10회 · 10월</td><td><input type="number" placeholder="입력" id="a27-10-asset" onchange="calcDiff('a27-10',30766)"></td><td><input type="number" placeholder="입력" id="a27-10-profit"></td><td><input type="text" placeholder="메모" id="a27-10-memo" style="text-align:left;color:var(--text2)"></td><td id="a27-10-diff" class="diff-zero">-</td></tr>
+          <tr><td>11회 · 11월</td><td><input type="number" placeholder="입력" id="a27-11-asset" onchange="calcDiff('a27-11',32289)"></td><td><input type="number" placeholder="입력" id="a27-11-profit"></td><td><input type="text" placeholder="메모" id="a27-11-memo" style="text-align:left;color:var(--text2)"></td><td id="a27-11-diff" class="diff-zero">-</td></tr>
+          <tr><td>12회 · 12월</td><td><input type="number" placeholder="입력" id="a27-12-asset" onchange="calcDiff('a27-12',38740)"></td><td><input type="number" placeholder="입력" id="a27-12-profit"></td><td><input type="text" placeholder="메모" id="a27-12-memo" style="text-align:left;color:var(--text2)"></td><td id="a27-12-diff" class="diff-zero">-</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 2028년 -->
+<div id="year-2028" class="year-content">
+  <div class="year-summary">
+    <div class="ys-item">
+      <div class="ys-label">연말 예상 자산</div>
+      <div class="ys-val" style="color:var(--accent2)">10억 4,660만</div>
+    </div>
+    <div class="ys-item">
+      <div class="ys-label">5억 달성 시점</div>
+      <div class="ys-val" style="color:var(--accent)">9월경 🎯</div>
+    </div>
+    <div class="ys-item">
+      <div class="ys-label">내년 5월 세금</div>
+      <div class="ys-val" style="color:var(--red)">1억 4,828만</div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">
+      <h2>시뮬레이션</h2>
+      <span class="badge">12회차 · 1억↑ 특별 30%/30%</span>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>회차</th>
+            <th>투자 전 자산</th>
+            <th>일반수익<br><span style="font-size:9px">40%·14%</span></th>
+            <th>특별수익<br><span style="font-size:9px">30%·30%</span></th>
+            <th>생활비</th>
+            <th>비고</th>
+            <th>회차 말 자산</th>
+            <th>누적수익</th>
+            <th>누적세금</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><div class="round-badge"><span class="round-num">1</span><div><span>1월</span><span class="month-tag">일반</span></div></div></td>
+            <td>38,740만</td><td class="profit">+2,169만</td><td class="diff-zero">-</td>
+            <td class="living">-200만</td><td>-</td>
+            <td class="asset-val">40,709만</td><td class="total">2,169만</td><td class="tax-val">477만</td>
+          </tr>
+          <tr>
+            <td><div class="round-badge"><span class="round-num">2</span><div><span>2월<span class="note-tag note-add">+7천</span></span><span class="month-tag">일반</span></div></div></td>
+            <td>40,709만</td><td class="profit">+2,280만</td><td class="diff-zero">-</td>
+            <td class="living">-200만</td><td class="add-fund">+7,000만 투입</td>
+            <td class="asset-val">49,789만</td><td class="total">4,449만</td><td class="tax-val">979만</td>
+          </tr>
+          <tr class="special">
+            <td><div class="round-badge"><span class="round-num">3</span><div><span>3월<span class="note-tag note-special">특별</span></span><span class="month-tag">40%+30%</span></div></div></td>
+            <td>49,789만</td><td class="profit">+2,788만</td><td class="special-profit">+4,481만</td>
+            <td class="living">-200만</td><td>1억↑ 30%/30%</td>
+            <td class="asset-val">56,858만</td><td class="total">11,718만</td><td class="tax-val">2,578만</td>
+          </tr>
+          <tr>
+            <td><div class="round-badge"><span class="round-num">4</span><div><span>4월</span><span class="month-tag">일반</span></div></div></td>
+            <td>56,858만</td><td class="profit">+3,184만</td><td class="diff-zero">-</td>
+            <td class="living">-200만</td><td>-</td>
+            <td class="asset-val">59,842만</td><td class="total">14,902만</td><td class="tax-val">3,278만</td>
+          </tr>
+          <tr class="tax-row">
+            <td><div class="round-badge"><span class="round-num">5</span><div><span>5월<span class="note-tag note-tax">세금납부</span></span><span class="month-tag">일반</span></div></div></td>
+            <td>59,842만</td><td class="profit">+3,351만</td><td class="diff-zero">-</td>
+            <td class="living">-200만</td><td class="tax-val">-6,081만 (2027세금)</td>
+            <td class="asset-val">56,912만</td><td class="total">18,253만</td><td class="tax-val">4,016만</td>
+          </tr>
+          <tr class="special">
+            <td><div class="round-badge"><span class="round-num">6</span><div><span>6월<span class="note-tag note-special">특별</span></span><span class="month-tag">40%+30%</span></div></div></td>
+            <td>56,912만</td><td class="profit">+3,187만</td><td class="special-profit">+5,122만</td>
+            <td class="living">-200만</td><td>-</td>
+            <td class="asset-val">65,021만</td><td class="total">26,562만</td><td class="tax-val">5,844만</td>
+          </tr>
+          <tr>
+            <td><div class="round-badge"><span class="round-num">7</span><div><span>7월</span><span class="month-tag">일반</span></div></div></td>
+            <td>65,021만</td><td class="profit">+3,641만</td><td class="diff-zero">-</td>
+            <td class="living">-200만</td><td>-</td>
+            <td class="asset-val">68,462만</td><td class="total">30,203만</td><td class="tax-val">6,645만</td>
+          </tr>
+          <tr>
+            <td><div class="round-badge"><span class="round-num">8</span><div><span>8월</span><span class="month-tag">일반</span></div></div></td>
+            <td>68,462만</td><td class="profit">+3,834만</td><td class="diff-zero">-</td>
+            <td class="living">-200만</td><td>-</td>
+            <td class="asset-val">72,096만</td><td class="total">34,037만</td><td class="tax-val">7,488만</td>
+          </tr>
+          <tr class="special">
+            <td><div class="round-badge"><span class="round-num">9</span><div><span>9월<span class="note-tag note-special">특별🎯</span></span><span class="month-tag">40%+30%</span></div></div></td>
+            <td>72,096만</td><td class="profit">+4,037만</td><td class="special-profit">+6,489만</td>
+            <td class="living">-200만</td><td style="color:var(--accent)">5억 달성!</td>
+            <td class="asset-val">82,422만</td><td class="total">44,563만</td><td class="tax-val">9,804만</td>
+          </tr>
+          <tr>
+            <td><div class="round-badge"><span class="round-num">10</span><div><span>10월</span><span class="month-tag">일반</span></div></div></td>
+            <td>82,422만</td><td class="profit">+4,616만</td><td class="diff-zero">-</td>
+            <td class="living">-200만</td><td>-</td>
+            <td class="asset-val">86,838만</td><td class="total">49,179만</td><td class="tax-val">10,819만</td>
+          </tr>
+          <tr>
+            <td><div class="round-badge"><span class="round-num">11</span><div><span>11월</span><span class="month-tag">일반</span></div></div></td>
+            <td>86,838만</td><td class="profit">+4,863만</td><td class="diff-zero">-</td>
+            <td class="living">-200만</td><td>-</td>
+            <td class="asset-val">91,501만</td><td class="total">54,042만</td><td class="tax-val">11,889만</td>
+          </tr>
+          <tr class="special">
+            <td><div class="round-badge"><span class="round-num">12</span><div><span>12월<span class="note-tag note-special">특별</span></span><span class="month-tag">40%+30%</span></div></div></td>
+            <td>91,501만</td><td class="profit">+5,124만</td><td class="special-profit">+8,235만</td>
+            <td class="living">-200만</td><td>-</td>
+            <td class="asset-val">104,660만</td><td class="total">67,401만</td><td class="tax-val">14,828만</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="actual-section">
+    <div class="actual-header">
+      <h2>실제 투자 기록</h2>
+      <button class="edit-btn" onclick="saveActual('2028')">저장</button>
+    </div>
+    <div class="table-scroll">
+      <table class="actual-table">
+        <thead>
+          <tr>
+            <th>회차</th><th>실제 자산 (만원)</th><th>실제 수익 (만원)</th><th>메모</th><th>예상 대비</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>1회 · 1월</td><td><input type="number" placeholder="입력" id="a28-1-asset" onchange="calcDiff('a28-1',40709)"></td><td><input type="number" placeholder="입력" id="a28-1-profit"></td><td><input type="text" placeholder="메모" id="a28-1-memo" style="text-align:left;color:var(--text2)"></td><td id="a28-1-diff" class="diff-zero">-</td></tr>
+          <tr><td>2회 · 2월</td><td><input type="number" placeholder="입력" id="a28-2-asset" onchange="calcDiff('a28-2',49789)"></td><td><input type="number" placeholder="입력" id="a28-2-profit"></td><td><input type="text" placeholder="메모" id="a28-2-memo" style="text-align:left;color:var(--text2)"></td><td id="a28-2-diff" class="diff-zero">-</td></tr>
+          <tr><td>3회 · 3월</td><td><input type="number" placeholder="입력" id="a28-3-asset" onchange="calcDiff('a28-3',56858)"></td><td><input type="number" placeholder="입력" id="a28-3-profit"></td><td><input type="text" placeholder="메모" id="a28-3-memo" style="text-align:left;color:var(--text2)"></td><td id="a28-3-diff" class="diff-zero">-</td></tr>
+          <tr><td>4회 · 4월</td><td><input type="number" placeholder="입력" id="a28-4-asset" onchange="calcDiff('a28-4',59842)"></td><td><input type="number" placeholder="입력" id="a28-4-profit"></td><td><input type="text" placeholder="메모" id="a28-4-memo" style="text-align:left;color:var(--text2)"></td><td id="a28-4-diff" class="diff-zero">-</td></tr>
+          <tr><td>5회 · 5월</td><td><input type="number" placeholder="입력" id="a28-5-asset" onchange="calcDiff('a28-5',56912)"></td><td><input type="number" placeholder="입력" id="a28-5-profit"></td><td><input type="text" placeholder="메모" id="a28-5-memo" style="text-align:left;color:var(--text2)"></td><td id="a28-5-diff" class="diff-zero">-</td></tr>
+          <tr><td>6회 · 6월</td><td><input type="number" placeholder="입력" id="a28-6-asset" onchange="calcDiff('a28-6',65021)"></td><td><input type="number" placeholder="입력" id="a28-6-profit"></td><td><input type="text" placeholder="메모" id="a28-6-memo" style="text-align:left;color:var(--text2)"></td><td id="a28-6-diff" class="diff-zero">-</td></tr>
+          <tr><td>7회 · 7월</td><td><input type="number" placeholder="입력" id="a28-7-asset" onchange="calcDiff('a28-7',68462)"></td><td><input type="number" placeholder="입력" id="a28-7-profit"></td><td><input type="text" placeholder="메모" id="a28-7-memo" style="text-align:left;color:var(--text2)"></td><td id="a28-7-diff" class="diff-zero">-</td></tr>
+          <tr><td>8회 · 8월</td><td><input type="number" placeholder="입력" id="a28-8-asset" onchange="calcDiff('a28-8',72096)"></td><td><input type="number" placeholder="입력" id="a28-8-profit"></td><td><input type="text" placeholder="메모" id="a28-8-memo" style="text-align:left;color:var(--text2)"></td><td id="a28-8-diff" class="diff-zero">-</td></tr>
+          <tr><td>9회 · 9월</td><td><input type="number" placeholder="입력" id="a28-9-asset" onchange="calcDiff('a28-9',82422)"></td><td><input type="number" placeholder="입력" id="a28-9-profit"></td><td><input type="text" placeholder="메모" id="a28-9-memo" style="text-align:left;color:var(--text2)"></td><td id="a28-9-diff" class="diff-zero">-</td></tr>
+          <tr><td>10회 · 10월</td><td><input type="number" placeholder="입력" id="a28-10-asset" onchange="calcDiff('a28-10',86838)"></td><td><input type="number" placeholder="입력" id="a28-10-profit"></td><td><input type="text" placeholder="메모" id="a28-10-memo" style="text-align:left;color:var(--text2)"></td><td id="a28-10-diff" class="diff-zero">-</td></tr>
+          <tr><td>11회 · 11월</td><td><input type="number" placeholder="입력" id="a28-11-asset" onchange="calcDiff('a28-11',91501)"></td><td><input type="number" placeholder="입력" id="a28-11-profit"></td><td><input type="text" placeholder="메모" id="a28-11-memo" style="text-align:left;color:var(--text2)"></td><td id="a28-11-diff" class="diff-zero">-</td></tr>
+          <tr><td>12회 · 12월</td><td><input type="number" placeholder="입력" id="a28-12-asset" onchange="calcDiff('a28-12',104660)"></td><td><input type="number" placeholder="입력" id="a28-12-profit"></td><td><input type="text" placeholder="메모" id="a28-12-memo" style="text-align:left;color:var(--text2)"></td><td id="a28-12-diff" class="diff-zero">-</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="footer-note">입력한 데이터는 브라우저를 닫으면 초기화됩니다 · 정기적으로 메모장에 백업 권장</div>
+
+<script>
+function showYear(year) {
+  document.querySelectorAll('.year-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.year-tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('year-' + year).classList.add('active');
+  event.target.classList.add('active');
+}
+
+function calcDiff(id, expected) {
+  const actual = parseFloat(document.getElementById(id + '-asset').value);
+  const diffEl = document.getElementById(id + '-diff');
+  if (isNaN(actual)) { diffEl.textContent = '-'; diffEl.className = 'diff-zero'; return; }
+  const diff = actual - expected;
+  if (diff > 0) {
+    diffEl.textContent = '+' + diff.toLocaleString() + '만';
+    diffEl.className = 'diff-plus';
+  } else if (diff < 0) {
+    diffEl.textContent = diff.toLocaleString() + '만';
+    diffEl.className = 'diff-minus';
+  } else {
+    diffEl.textContent = '±0';
+    diffEl.className = 'diff-zero';
+  }
+}
+
+function saveActual(year) {
+  alert('✅ 저장되었습니다!\n\n브라우저 새로고침 시 초기화되니\n중요한 수치는 메모장에도 기록해두세요.');
+}
+</script>
+</body>
+</html>

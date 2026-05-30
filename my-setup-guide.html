@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>나의 세팅 가이드</title>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1e2d45;
+    --accent: #00c2a8;
+    --accent2: #f59e0b;
+    --accent3: #6366f1;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #475569;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Nanum Gothic', sans-serif;
+    min-height: 100vh;
+    padding: 24px 16px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .header h1 {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    background: linear-gradient(135deg, var(--accent), var(--accent3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .header p {
+    color: var(--text3);
+    font-size: 11px;
+    margin-top: 6px;
+    letter-spacing: 2px;
+  }
+
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .section-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-header .icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+
+  .icon-github { background: rgba(255,255,255,0.1); }
+  .icon-vercel { background: rgba(99,102,241,0.2); }
+  .icon-flow { background: rgba(0,194,168,0.2); }
+  .icon-tip { background: rgba(245,158,11,0.2); }
+
+  .section-header h2 {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: var(--text2);
+  }
+
+  .section-body { padding: 16px 18px; }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(30,45,69,0.5);
+  }
+
+  .info-row:last-child { border-bottom: none; }
+
+  .info-row .label {
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 1px;
+  }
+
+  .info-row .value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .copy-btn {
+    background: var(--surface2);
+    border: none;
+    color: var(--text3);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Nanum Gothic', sans-serif;
+    transition: all 0.2s;
+  }
+
+  .copy-btn:hover { background: var(--accent); color: #0a0e1a; }
+
+  .link-btn {
+    display: block;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 8px;
+    transition: all 0.2s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .link-btn:hover { border-color: var(--accent); background: rgba(0,194,168,0.05); }
+  .link-btn span { font-size: 10px; color: var(--text3); font-family: 'Nanum Gothic', sans-serif; }
+
+  /* 흐름 단계 */
+  .flow-steps { padding: 4px 0; }
+
+  .flow-step {
+    display: flex;
+    gap: 12px;
+    padding: 10px 0;
+    position: relative;
+  }
+
+  .flow-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 14px;
+    top: 36px;
+    bottom: 0;
+    width: 1px;
+    background: var(--border);
+  }
+
+  .step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .step-content .step-title {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 3px;
+  }
+
+  .step-content .step-desc {
+    font-size: 11px;
+    color: var(--text3);
+    line-height: 1.6;
+  }
+
+  .step-content code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: var(--surface2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--accent2);
+  }
+
+  /* 팁 */
+  .tip-list { padding: 4px 0; }
+
+  .tip-item {
+    display: flex;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(30,45,69,0.3);
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text2);
+  }
+
+  .tip-item:last-child { border-bottom: none; }
+
+  .tip-item .tip-icon { font-size: 14px; flex-shrink: 0; }
+
+  .date-tag {
+    font-size: 10px;
+    color: var(--text3);
+    text-align: right;
+    padding: 12px;
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>나의 세팅 가이드</h1>
+  <p>MY ACCOUNT & WORKFLOW</p>
+</div>
+
+<!-- 계정 정보 -->
+<div class="section">
+  <div class="section-header">
+    <div class="icon icon-github">🐙</div>
+    <h2>GitHub 계정</h2>
+  </div>
+  <div class="section-body">
+    <div class="info-row">
+      <span class="label">아이디</span>
+      <span class="value">May <button class="copy-btn" onclick="copy('May')">복사</button></span>
+    </div>
+    <div class="info-row">
+      <span class="label">이메일</span>
+      <span class="value">mjn790@gmail.com <button class="copy-btn" onclick="copy('mjn790@gmail.com')">복사</button></span>
+    </div>
+    <div class="info-row">
+      <span class="label">주소</span>
+      <span class="value">github.com/May <button class="copy-btn" onclick="copy('https://github.com/May')">복사</button></span>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <div class="icon icon-vercel">▲</div>
+    <h2>Vercel 계정</h2>
+  </div>
+  <div class="section-body">
+    <div class="info-row">
+      <span class="label">이메일</span>
+      <span class="value">mjn790@gmail.com <button class="copy-btn" onclick="copy('mjn790@gmail.com')">복사</button></span>
+    </div>
+    <div class="info-row">
+      <span class="label">Team URL</span>
+      <span class="value">may-lifehome-project <button class="copy-btn" onclick="copy('may-lifehome-project')">복사</button></span>
+    </div>
+    <div class="info-row">
+      <span class="label">플랜</span>
+      <span class="value" style="color:var(--accent2)">Hobby (무료)</span>
+    </div>
+  </div>
+</div>
+
+<!-- 바로가기 링크 -->
+<div class="section">
+  <div class="section-header">
+    <div class="icon icon-flow">🔗</div>
+    <h2>바로가기</h2>
+  </div>
+  <div class="section-body">
+    <a href="https://github.com" target="_blank" class="link-btn">
+      github.com <span>코드 저장소 →</span>
+    </a>
+    <a href="https://vercel.com" target="_blank" class="link-btn">
+      vercel.com <span>배포 & 링크 관리 →</span>
+    </a>
+    <a href="https://claude.ai" target="_blank" class="link-btn">
+      claude.ai <span>AI 작업 →</span>
+    </a>
+  </div>
+</div>
+
+<!-- 작업 흐름 -->
+<div class="section">
+  <div class="section-header">
+    <div class="icon icon-flow">⚡</div>
+    <h2>작업 흐름</h2>
+  </div>
+  <div class="section-body">
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Claude에게 요청</div>
+          <div class="step-desc">claude.ai 또는 파워셸에서 <code>claude</code> 실행 후 수정 요청</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">파일 받기</div>
+          <div class="step-desc">수정된 HTML 파일 다운로드</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">GitHub에 올리기</div>
+          <div class="step-desc">github.com 접속 → 파일 업로드 → 저장</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-title">자동 반영</div>
+          <div class="step-desc">Vercel이 자동 감지 → 링크에 바로 반영 → 폰/PC 어디서든 확인</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 꿀팁 -->
+<div class="section">
+  <div class="section-header">
+    <div class="icon icon-tip">💡</div>
+    <h2>기억할 것들</h2>
+  </div>
+  <div class="section-body">
+    <div class="tip-list">
+      <div class="tip-item">
+        <span class="tip-icon">🔒</span>
+        <span>비밀번호는 여기 적지 말고 따로 안전하게 보관하세요</span>
+      </div>
+      <div class="tip-item">
+        <span class="tip-icon">📱</span>
+        <span>Vercel 링크 생성되면 폰 홈화면에 추가 → 앱처럼 사용 가능</span>
+      </div>
+      <div class="tip-item">
+        <span class="tip-icon">💬</span>
+        <span>수정이 필요하면 Claude에게 요청 → 파일 받아서 GitHub에 올리면 끝</span>
+      </div>
+      <div class="tip-item">
+        <span class="tip-icon">⚠️</span>
+        <span>투자 계좌번호, 비밀번호는 Claude에게 절대 입력 금지</span>
+      </div>
+      <div class="tip-item">
+        <span class="tip-icon">🔄</span>
+        <span>파워셸에서 <code>claude</code> 치면 PC에서 직접 작업 가능</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="date-tag">작성일 · 2026.05.30</div>
+
+<script>
+function copy(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    alert('복사됐어요! ✅');
+  });
+}
+</script>
+
+</body>
+</html>
